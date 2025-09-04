@@ -12,7 +12,8 @@ export async function login(data: LoginFormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    // Return a generic error to avoid account enumeration
+    return { error: 'Invalid email or password.' };
   }
 
   // Success: no error
@@ -21,6 +22,16 @@ export async function login(data: LoginFormData) {
 
 export async function register(data: RegisterFormData) {
   const supabase = await createClient();
+
+  // Basic server-side password policy
+  const password = (data.password || '').trim();
+  const isLongEnough = password.length >= 8;
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasDigitOrSymbol = /[0-9!@#$%^&*(),.?":{}|<>\-_[\]`~;'/+\\=]/.test(password);
+  if (!isLongEnough || !hasUpper || !hasLower || !hasDigitOrSymbol) {
+    return { error: 'Password must be 8+ chars and include upper, lower, and a number or symbol.' };
+  }
 
   const { error } = await supabase.auth.signUp({
     email: data.email,
@@ -33,10 +44,12 @@ export async function register(data: RegisterFormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    // Hide detailed errors from end users
+    return { error: 'Registration failed. Please try again.' };
   }
 
-  // Success: no error
+  // Success: depending on Supabase settings, email verification may be required
+  // We do not expose session state here; the UI should direct users accordingly
   return { error: null };
 }
 

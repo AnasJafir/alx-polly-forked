@@ -24,7 +24,8 @@ export default function LoginPage() {
     const result = await login({ email, password });
 
     if (result?.error) {
-      setError(result.error);
+      // Always show a generic message to avoid account enumeration
+      setError('Invalid email or password.');
       setLoading(false);
     } else {
       window.location.href = '/polls'; // Full reload to pick up session

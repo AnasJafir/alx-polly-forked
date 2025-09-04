@@ -31,10 +31,12 @@ export default function RegisterPage() {
     const result = await register({ name, email, password });
 
     if (result?.error) {
-      setError(result.error);
+      // Do not surface detailed errors
+      setError('Registration failed. Please check your details and try again.');
       setLoading(false);
     } else {
-      window.location.href = '/polls'; // Full reload to pick up session
+      // If email confirmation is required, direct user to verification screen
+      window.location.href = '/auth/verify-email';
     }
   };
 

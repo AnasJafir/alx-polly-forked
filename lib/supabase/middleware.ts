@@ -42,5 +42,17 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // If user exists but email is not verified, redirect to verify page for protected routes
+  if (
+    user &&
+    // @ts-ignore - Supabase user may include email_confirmed_at
+    !user.email_confirmed_at &&
+    !request.nextUrl.pathname.startsWith('/auth')
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/verify-email'
+    return NextResponse.redirect(url)
+  }
+
   return supabaseResponse
 }
